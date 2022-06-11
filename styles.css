@@ -3,3 +3,25 @@
     margin: 0;
     padding: 0;
 }
+
+.calculator-div {
+    display: flex;
+    flex-direction: column;
+    background-color: blueviolet;
+    width: 25rem;
+    height: 30rem;
+    margin: 5rem auto;
+}
+
+.screen-div {
+    height: 3rem;
+    background-color: burlywood;
+    margin: 1rem;
+}
+
+.buttons-div {
+    margin: 1rem;
+    display: grid;
+    grid-template-rows: repeat(5, minmax(0, 1fr)); 
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
