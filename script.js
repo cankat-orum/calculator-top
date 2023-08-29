@@ -1,13 +1,45 @@
 class Calculator {
-  constructor(inputDisplay, outputDisplay) {}
+  constructor(input, output) {
+    this.inputDisplay = input;
+    this.outputDisplay = output;
+    this.inputHistory = [];
+  }
 
-  clearAllHistory() {}
+  clearAllHistory() {
+    this.inputHistory = [];
+    this.updateInputDisplay();
+    this.updateOutputDisplay("0");
+  }
 
-  backspace() {}
+  backspace() {
+    switch (this.getLastInputType()) {
+      case "number":
+        if (this.getLastInputValue().length > 1) {
+          this.editLastInput(this.getLastInputValue().slice(0, -1), "number");
+        } else {
+          this.deleteLastInput();
+        }
+        break;
+      case "operator":
+        this.deleteLastInput();
+        break;
+      default:
+        return;
+    }
+  }
 
   changePercentToDecimal() {}
 
-  insertNumber(value) {}
+  insertNumber(value) {
+    if (this.getLastInputType() === "number") {
+      this.appendToLastInput(value);
+    } else if (
+      this.getLastInputType() === "operator" ||
+      this.getLastInputType() === null
+    ) {
+      this.addNewInput(value, "number");
+    }
+  }
 
   insertOperation(value) {}
 
@@ -16,6 +48,54 @@ class Calculator {
   insertDecimalPoint() {}
 
   generateResult() {}
+
+  getLastInputType() {
+    return this.inputHistory.length === 0
+      ? null
+      : this.inputHistory[this.inputHistory.length - 1].type;
+  }
+
+  getLastInputValue() {
+    return this.inputHistory.length === 0
+      ? null
+      : this.inputHistory[this.inputHistory.length - 1].value;
+  }
+
+  getAllInputValues() {
+    return this.inputHistory.map((entry) => entry.value);
+  }
+
+  getOutputValue() {
+    return this.outputDisplay.value.replace(/,/g, "");
+  }
+
+  addNewInput(value, type) {
+    this.inputHistory.push({ type: type, value: value.toString() });
+    this.updateOutputDisplay();
+  }
+
+  appendToLastInput(value) {
+    this.inputHistory[this.inputHistory.length - 1].value += value.toString();
+    this.updateOutputDisplay();
+  }
+
+  editLastInput(value, type) {
+    this.inputHistory.pop();
+    this.addNewInput(value, type);
+  }
+
+  deleteLastInput() {
+    this.inputHistory.pop();
+    this.updateInputDisplay();
+  }
+
+  updateInputDisplay() {
+    this.inputDisplay.value = this.getAllInputValues().join(" ");
+  }
+
+  updateOutputDisplay(value) {
+    this.outputDisplay.value = Number(value).toLocaleString();
+  }
 }
 
 const inputDisplay = document.querySelector("#history");
