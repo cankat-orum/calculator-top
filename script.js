@@ -28,7 +28,11 @@ class Calculator {
     }
   }
 
-  changePercentToDecimal() {}
+  changePercentToDecimal() {
+    if (this.getLastInputType() === "number") {
+      this.editLastInput(this.getLastInputValue() / 100, "number");
+    }
+  }
 
   insertNumber(value) {
     if (this.getLastInputType() === "number") {
@@ -41,13 +45,78 @@ class Calculator {
     }
   }
 
-  insertOperation(value) {}
+  insertOperation(value) {
+    switch (this.getLastInputType()) {
+      case "number":
+        this.addNewInput(value, "operator");
+        break;
+      case "operator":
+        this.editLastInput(value, "operator");
+        break;
+      case "equals":
+        let output = this.getOutputValue();
+        this.clearAllHistory();
+        this.addNewInput(output, "number");
+        this.addNewInput(value, "operator");
+        break;
+      default:
+        return;
+    }
+  }
 
-  negateNumber() {}
+  negateNumber() {
+    if (this.getLastInputType() === "number") {
+      this.editLastInput(parseFloat(this.getLastInputValue()) * -1, "number");
+    }
+  }
 
-  insertDecimalPoint() {}
+  insertDecimalPoint() {
+    if (
+      this.getLastInputType() === "number" &&
+      !this.getLastInputValue().includes(".")
+    ) {
+      this.appendToLastInput(".");
+    } else if (
+      this.getLastInputType() === "operator" ||
+      this.getLastInputType() === null
+    ) {
+      this.addNewInput("0.", "number");
+    }
+  }
 
-  generateResult() {}
+  generateResult() {
+    if (this.getLastInputType() === "number") {
+      const self = this;
+      const simplifyExpression = function (currentExpression, operator) {
+        if (currentExpression.indexOf(operator) === -1) {
+          return currentExpression;
+        } else {
+          let operatorIdx = currentExpression.indexOf(operator);
+          let leftOperandIdx = operatorIdx - 1;
+          let rightOperandIdx = operatorIdx + 1;
+
+          let partialSolution = self.performOperation(
+            ...currentExpression.slice(leftOperandIdx, rightOperandIdx + 1)
+          );
+
+          currentExpression.splice(
+            leftOperandIdx,
+            3,
+            partialSolution.toString()
+          );
+
+          return simplifyExpression(currentExpression, operator);
+        }
+      };
+      let result = ["x", "÷", "-", "+"].reduce(
+        simplifyExpression,
+        this.getAllInputValues()
+      );
+
+      this.addNewInput("=", "equals");
+      this.updateOutputDisplay(result.toString());
+    }
+  }
 
   getLastInputType() {
     return this.inputHistory.length === 0
@@ -71,12 +140,12 @@ class Calculator {
 
   addNewInput(value, type) {
     this.inputHistory.push({ type: type, value: value.toString() });
-    this.updateOutputDisplay();
+    this.updateInputDisplay();
   }
 
   appendToLastInput(value) {
     this.inputHistory[this.inputHistory.length - 1].value += value.toString();
-    this.updateOutputDisplay();
+    this.updateInputDisplay();
   }
 
   editLastInput(value, type) {
@@ -95,6 +164,28 @@ class Calculator {
 
   updateOutputDisplay(value) {
     this.outputDisplay.value = Number(value).toLocaleString();
+  }
+
+  performOperation(leftOperand, operation, rightOperand) {
+    leftOperand = parseFloat(leftOperand);
+    rightOperand = parseFloat(rightOperand);
+
+    if (Number.isNaN(leftOperand) || Number.isNaN(rightOperand)) {
+      return;
+    }
+
+    switch (operation) {
+      case "x":
+        return leftOperand * rightOperand;
+      case "÷":
+        return leftOperand / rightOperand;
+      case "-":
+        return leftOperand - rightOperand;
+      case "+":
+        return leftOperand + rightOperand;
+      default:
+        return;
+    }
   }
 }
 
